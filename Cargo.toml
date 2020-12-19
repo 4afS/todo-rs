@@ -7,3 +7,10 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+actix = "0.10.0"
+actix-web = "3.3.2"
+chrono = "0.4.19"
+
+[[bin]]
+doc = false
+name = "todo"
