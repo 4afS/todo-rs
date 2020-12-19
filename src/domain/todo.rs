@@ -2,11 +2,17 @@ use crate::domain::id::Id;
 use crate::domain::due_to::DueTo;
 use crate::domain::title::Title;
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug)]
 pub struct Todo {
     pub id: Id,
     pub title: Title,
     pub due_to: DueTo,
+}
+
+impl PartialEq for Todo {
+    fn eq(&self, that: &Todo) -> bool {
+        self.id == that.id
+    }
 }
 
 impl Todo {
