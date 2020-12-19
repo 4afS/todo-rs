@@ -1,7 +1,7 @@
 use crate::domain::todo::Todo;
 use crate::domain::id::Id;
 
-trait Repisitory<E> {
+pub trait Repisitory<E> {
     fn add(&self, todo: &Todo) -> Result<(), E>;
     fn delete(&self, id: &Id) -> Result<(), E>;
     fn get(&self, id: &Id) -> Result<Todo, E>;
