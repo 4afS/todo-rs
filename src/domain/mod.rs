@@ -2,6 +2,7 @@ pub mod due_to;
 pub mod id;
 pub mod title;
 pub mod todo;
+pub mod repository;
 
 #[test]
 fn same_id_but_different_title_and_due_to() {
