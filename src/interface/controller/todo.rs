@@ -7,24 +7,28 @@ use crate::domain::{
 };
 use crate::usecase::todo::Usecase;
 use actix_web::{
-    dev::{HttpResponseBuilder, ResponseBody},
+    dev::HttpResponseBuilder,
     error,
     http::{header, StatusCode},
-    web, HttpResponse, Responder,
+    web, HttpResponse,
 };
 
+extern crate derive_more;
 use derive_more::Display;
 
 #[derive(Display, Debug)]
 enum TodoError {
     #[display(fmt = "invalid due_to format: {}", message)]
     ParseError { message: String },
+    #[display(fmt = "internal error occured")]
+    InternalError,
 }
 
 impl error::ResponseError for TodoError {
     fn status_code(&self) -> StatusCode {
         match *self {
             TodoError::ParseError { .. } => StatusCode::BAD_REQUEST,
+            TodoError::InternalError => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 
@@ -39,7 +43,6 @@ pub struct Controller<T: Repository> {
     pub usecase: Usecase<T>,
 }
 
-#[derive()]
 pub struct CreateTodoReqest {
     pub title: String,
     pub due_to: String,
@@ -60,15 +63,14 @@ impl<T: Repository> Controller<T> {
         req: web::Json<CreateTodoReqest>,
     ) -> actix_web::Result<HttpResponse> {
         let id = generate();
-        let todo = req
-            .to_model(id)
-            .ok_or(HttpResponse::BadRequest().json(ResponseBody {
-                message: "Invalid date format",
-            }))?;
+        let todo = req.to_model(id).ok_or(TodoError::ParseError {
+            message: "invalid format".to_string(),
+        })?;
 
-        match self.usecase.create(todo) {
+        let res = match self.usecase.create(&todo) {
             Ok(()) => Ok(HttpResponse::Ok().finish()),
-            Err(_) => Ok(HttpResponse::Ok()),
-        }
+            Err(_) => Err(TodoError::InternalError),
+        }?;
+        Ok(res)
     }
 }
