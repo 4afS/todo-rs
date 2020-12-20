@@ -89,7 +89,7 @@ pub struct TodoResponse {
 impl TodoResponse {
     fn from_model(todo: &Todo) -> Self {
         let id = todo.id.to_string();
-        let title = todo.title.value;
+        let title = todo.title.value.to_string();
         let due_to = todo.due_to.date.format("%Y/%m/%d").to_string();
         TodoResponse { id, title, due_to }
     }
