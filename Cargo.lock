@@ -1607,6 +1607,8 @@ dependencies = [
  "actix-web",
  "chrono",
  "derive_more",
+ "serde",
+ "serde_json",
  "uuid",
 ]
 
