@@ -1606,6 +1606,7 @@ dependencies = [
  "actix",
  "actix-web",
  "chrono",
+ "derive_more",
  "uuid",
 ]
 
