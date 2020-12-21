@@ -6,6 +6,8 @@ use crate::domain::{
     todo::Todo,
 };
 
+use web::Data;
+
 use crate::usecase::todo::Usecase;
 use actix_web::{
     dev::HttpResponseBuilder,
@@ -23,7 +25,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 #[derive(Display, Debug)]
-enum TodoError {
+pub enum TodoError {
     #[display(fmt = "invalid due_to format: {}", message)]
     ParseError { message: String },
     #[display(fmt = "internal error occured")]
@@ -43,10 +45,6 @@ impl error::ResponseError for TodoError {
             .set_header(header::CONTENT_TYPE, "text/json")
             .json(self.to_string())
     }
-}
-
-pub struct Controller<T: Repository> {
-    pub usecase: Usecase<T>,
 }
 
 #[derive(Deserialize)]
@@ -95,57 +93,59 @@ impl TodoResponse {
     }
 }
 
-impl<T: Repository> Controller<T> {
-    pub async fn create(
-        &self,
-        req: web::Json<CreateTodoReqest>,
-    ) -> actix_web::Result<HttpResponse> {
-        let id = generate();
-        let todo = req.to_model(id).ok_or(TodoError::ParseError {
-            message: "invalid format".to_string(),
-        })?;
+pub async fn create<T: Repository>(
+    req: web::Json<CreateTodoReqest>,
+    data: Data<Usecase<T>>,
+) -> actix_web::Result<HttpResponse, TodoError> {
+    let id = generate();
+    let todo = req.to_model(id).ok_or(TodoError::ParseError {
+        message: "invalid format".to_string(),
+    })?;
 
-        let res = match self.usecase.create(&todo) {
-            Ok(()) => Ok(HttpResponse::Ok().finish()),
-            Err(_) => Err(TodoError::InternalError),
-        }?;
-        Ok(res)
+    match data.create(&todo) {
+        Ok(()) => Ok(HttpResponse::Ok().finish()),
+        Err(_) => Err(TodoError::InternalError),
     }
+}
 
-    pub async fn delete(&self, req: web::Json<IdReqest>) -> actix_web::Result<HttpResponse> {
-        let id = req.to_model().ok_or(TodoError::ParseError {
-            message: "invalid format".to_string(),
-        })?;
+pub async fn delete<T: Repository>(
+    path: web::Path<IdReqest>,
+    data: Data<Usecase<T>>,
+) -> actix_web::Result<HttpResponse, TodoError> {
+    let id = path.to_model().ok_or(TodoError::ParseError {
+        message: "invalid format".to_string(),
+    })?;
 
-        let res = match self.usecase.remove(&id) {
-            Ok(()) => Ok(HttpResponse::Ok().finish()),
-            Err(_) => Err(TodoError::InternalError),
-        }?;
-        Ok(res)
+    match data.remove(&id) {
+        Ok(()) => Ok(HttpResponse::Ok().finish()),
+        Err(_) => Err(TodoError::InternalError),
     }
+}
 
-    pub async fn get(&self, req: web::Json<IdReqest>) -> actix_web::Result<HttpResponse> {
-        let id = req.to_model().ok_or(TodoError::ParseError {
-            message: "invalid format".to_string(),
-        })?;
+pub async fn get<T: Repository>(
+    path: web::Path<IdReqest>,
+    data: Data<Usecase<T>>,
+) -> actix_web::Result<HttpResponse, TodoError> {
+    let id = path.to_model().ok_or(TodoError::ParseError {
+        message: "invalid format".to_string(),
+    })?;
 
-        let res = match self.usecase.get(&id) {
-            Ok(todo) => Ok(HttpResponse::Ok().json(TodoResponse::from_model(&todo))),
-            Err(_) => Err(TodoError::InternalError),
-        }?;
-        Ok(res)
+    match data.get(&id) {
+        Ok(todo) => Ok(HttpResponse::Ok().json(TodoResponse::from_model(&todo))),
+        Err(_) => Err(TodoError::InternalError),
     }
+}
 
-    pub async fn all(&self) -> actix_web::Result<HttpResponse> {
-        let res = match self.usecase.all() {
-            Ok(todos) => Ok(HttpResponse::Ok().json(
-                todos
-                    .iter()
-                    .map(|todo: &Todo| TodoResponse::from_model(todo))
-                    .collect::<Vec<TodoResponse>>(),
-            )),
-            Err(_) => Err(TodoError::InternalError),
-        }?;
-        Ok(res)
+pub async fn all<T: Repository>(
+    data: Data<Usecase<T>>,
+) -> actix_web::Result<HttpResponse, TodoError> {
+    match data.all() {
+        Ok(todos) => Ok(HttpResponse::Ok().json(
+            todos
+                .iter()
+                .map(|todo: &Todo| TodoResponse::from_model(todo))
+                .collect::<Vec<TodoResponse>>(),
+        )),
+        Err(_) => Err(TodoError::InternalError),
     }
 }
