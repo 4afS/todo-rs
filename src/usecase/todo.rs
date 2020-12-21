@@ -1,9 +1,9 @@
-use crate::domain::todo::Todo;
-use crate::domain::repository::Repository;
 use crate::domain::id::Id;
+use crate::domain::repository::Repository;
+use crate::domain::todo::Todo;
 
-pub struct Usecase<T: Repository> {
-    pub repository: T
+pub struct Usecase<T: Repository + Sized> {
+    pub repository: T,
 }
 
 impl<T: Repository> Usecase<T> {
