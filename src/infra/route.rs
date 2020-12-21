@@ -2,7 +2,7 @@ use actix_web::middleware::Logger;
 use actix_web::{web, App, HttpServer};
 use mock::Db;
 
-use crate::{interface::todo, usecase::todo::Usecase};
+use crate::{application::todo, usecase::todo::Usecase};
 
 use super::db::mock;
 
