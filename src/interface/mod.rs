@@ -1,3 +1,1 @@
-pub mod controller{
-    pub mod todo;
-}
+pub mod todo;
