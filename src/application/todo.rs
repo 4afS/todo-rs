@@ -42,7 +42,7 @@ impl error::ResponseError for TodoError {
 
     fn error_response(&self) -> HttpResponse {
         HttpResponseBuilder::new(self.status_code())
-            .set_header(header::CONTENT_TYPE, "text/json")
+            .set_header(header::CONTENT_TYPE, "application/json")
             .json(self.to_string())
     }
 }
@@ -54,7 +54,7 @@ pub struct CreateTodoReqest {
 }
 
 impl CreateTodoReqest {
-    fn to_model(&self, id: Id) -> Option<Todo> {
+    pub fn to_model(&self, id: Id) -> Option<Todo> {
         let title = Title::new(&self.title);
         let date = chrono::NaiveDate::parse_from_str(&self.due_to, "%Y/%m/%d").ok()?;
         let due_to = DueTo::new(&date);
@@ -85,7 +85,7 @@ pub struct TodoResponse {
 }
 
 impl TodoResponse {
-    fn from_model(todo: &Todo) -> Self {
+    pub fn from_model(todo: &Todo) -> Self {
         let id = todo.id.to_string();
         let title = todo.title.value.to_string();
         let due_to = todo.due_to.date.format("%Y/%m/%d").to_string();
