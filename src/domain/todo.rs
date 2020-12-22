@@ -1,8 +1,8 @@
-use crate::domain::id::Id;
 use crate::domain::due_to::DueTo;
+use crate::domain::id::Id;
 use crate::domain::title::Title;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Todo {
     pub id: Id,
     pub title: Title,
