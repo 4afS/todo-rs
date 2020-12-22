@@ -2,6 +2,7 @@ use crate::domain::id::Id;
 use crate::domain::repository::Repository;
 use crate::domain::todo::Todo;
 
+#[derive(Clone)]
 pub struct Usecase<T: Repository + Sized> {
     pub repository: T,
 }
